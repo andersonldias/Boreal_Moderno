@@ -1,0 +1,7 @@
+README.md
+*.sql
+*.bat
+*.log
+vendor/
+node_modules/
+.git/

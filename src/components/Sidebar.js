@@ -53,9 +53,21 @@ export default function Sidebar() {
               </Link>
             </li>
           ))}
+          
+          <li className="nav-item mt-4">
+            <button 
+              className="nav-link btn btn-link text-start p-3 w-100 border-0"
+              style={linkStyle}
+              onClick={() => {
+                // Implementar logout
+                window.location.href = '/login';
+              }}
+            >
+              <i className="fas fa-sign-out-alt me-2"></i>
+              Sair
+            </button>
+          </li>
         </ul>
-
-        {/* Botão de Logout pode ser adicionado aqui mais tarde */}
       </div>
     </nav>
   );

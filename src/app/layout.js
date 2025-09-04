@@ -1,4 +1,4 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import './globals.css';
 
 export const metadata = {
   title: 'Boreal Moderno - Gestão de Esquadrias',
@@ -8,6 +8,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" 
+          rel="stylesheet"
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

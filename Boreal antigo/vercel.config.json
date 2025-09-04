@@ -1,0 +1,12 @@
+{
+  "build": {
+    "env": {
+      "DB_HOST": "@boreal_db_host",
+      "DB_PORT": "@boreal_db_port",
+      "DB_NAME": "@boreal_db_name",
+      "DB_USER": "@boreal_db_user",
+      "DB_PASS": "@boreal_db_pass",
+      "DB_CHARSET": "utf8"
+    }
+  }
+}
