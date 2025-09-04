@@ -11,10 +11,25 @@ export default function DashboardLayout({ children }) {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-      } else {
+      try {
+        console.log('Verificando sessão no DashboardLayout...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Erro ao verificar sessão:', error);
+          setLoading(false);
+          return;
+        }
+        
+        console.log('Sessão verificada:', session ? 'Usuário logado' : 'Nenhum usuário logado');
+        
+        if (!session) {
+          router.push('/login');
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar sessão:', error);
         setLoading(false);
       }
     };

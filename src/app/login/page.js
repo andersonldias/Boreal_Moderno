@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
 
@@ -11,26 +11,109 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Verifica se o usuário já está logado
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        console.log('Verificando sessão existente...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Erro ao verificar sessão:', error);
+          return;
+        }
+        
+        if (session) {
+          console.log('Usuário já está logado, redirecionando...');
+          router.push('/dashboard');
+        } else {
+          console.log('Nenhum usuário logado atualmente');
+        }
+      } catch (error) {
+        console.error('Erro ao verificar sessão:', error);
+      }
+    };
+
+    checkSession();
+  }, [router]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    console.log('Formulário de login enviado');
+    
     setLoading(true);
     setError(null);
 
+    // Validação dos campos
+    if (!email || !password) {
+      setError('Por favor, preencha todos os campos.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('Tentando fazer login com email:', email);
+      
+      // Verifica se o cliente Supabase está configurado corretamente
+      if (!supabase) {
+        throw new Error('Cliente Supabase não está configurado corretamente');
+      }
+      
+      // Verifica se as variáveis de ambiente estão definidas
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      console.log('Variáveis de ambiente:', {
+        url: supabaseUrl ? 'Definida' : 'Não definida',
+        key: supabaseAnonKey ? 'Definida' : 'Não definida'
+      });
+      
+      // Verifica se os valores estão corretos (sem mostrar a chave completa por segurança)
+      if (supabaseUrl) {
+        console.log('URL do Supabase:', supabaseUrl.substring(0, 30) + '...');
+      } else {
+        throw new Error('Configuração do Supabase não encontrada. Verifique as variáveis de ambiente no Vercel.');
+      }
+      
+      if (!supabaseAnonKey) {
+        throw new Error('Chave de autenticação do Supabase não encontrada. Verifique as variáveis de ambiente no Vercel.');
+      }
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('Resposta do Supabase:', { data, error });
+
       if (error) {
+        console.error('Erro retornado pelo Supabase:', error);
         throw error;
       }
 
-      // Login bem-sucedido, redireciona para o dashboard
-      router.push('/dashboard');
+      if (data?.user) {
+        // Login bem-sucedido, redireciona para o dashboard
+        console.log('Login bem-sucedido, redirecionando para o dashboard');
+        console.log('Dados do usuário:', data.user);
+        router.push('/dashboard');
+        router.refresh(); // Atualiza a página para garantir que os dados estejam atualizados
+      } else {
+        throw new Error('Falha na autenticação. Resposta inesperada do servidor.');
+      }
 
     } catch (error) {
-      setError(error.message || 'Ocorreu um erro ao tentar fazer login.');
+      console.error('Erro durante o login:', error);
+      let errorMessage = 'Ocorreu um erro ao tentar fazer login. ';
+      
+      if (error.message) {
+        errorMessage += error.message;
+      } else if (error.status === 400) {
+        errorMessage += 'Verifique suas credenciais e tente novamente.';
+      } else {
+        errorMessage += 'Por favor, tente novamente mais tarde.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -72,7 +155,12 @@ export default function LoginPage() {
               />
             </div>
             <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Entrando...
+                </>
+              ) : 'Entrar'}
             </button>
           </form>
         </div>
